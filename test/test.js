@@ -5,12 +5,13 @@ var sortof = require('../index');
 
 
 var bubbleSort = require('bubble-sort');
-
+var MergeSort = require('../MergeSort');
 
 describe( 'Sortof', function() {
 
 	var testArr = [ 4, 3, 3, 7, 9, 5, 3, 7, 9, 5, 435, 76 ];
 
+	/*
 	describe( 'Bubble Sort', function() {
 		
 		it( 'should sort when using no custom functionality or methods', function( done ) {
@@ -18,7 +19,7 @@ describe( 'Sortof', function() {
 			var inArr = _.shuffle( testArr );
 			
 			console.time("Bubble Sort Time");
-			inArr = sortof.bubbleSort( inArr );
+			inArr = sortof.bubbleSort( inArr, { subLen: inArr.length, subStart: 0 } );
 			console.timeEnd("Bubble Sort Time");
 			
 			var expArr = [ 3, 3, 3, 4, 5, 5, 7, 7, 9, 9, 76, 435 ];
@@ -28,7 +29,7 @@ describe( 'Sortof', function() {
 			var jsSortArr = _.shuffle( testArr );
 			
 			console.time("JS Sort Time");
-			jsSortArr.sort( function(a,b) { return a-b; } );
+			jsSortArr = jsSortArr.sort( function(a,b) { return a-b; } );
 			console.timeEnd("JS Sort Time");
 			
 			var ascending;
@@ -79,16 +80,68 @@ describe( 'Sortof', function() {
 		
 			var inArr = [ 123,534,56,768,5,34,67,87,789,56,34,2,456,3,675,87,5,3,5,7,6,3,4,7,9,4,2,23,6,675,5,3,23,65,565,72,5,7,7,3,5,8,3,1,6,8,0,7,5,3,4,7,9,9,6,5 ];
 			
+			var testArr = inArr.slice(0, inArr.length );
+			
 			console.time("QuickSort Time");
-			inArr = sortof.quickSort( inArr.slice(0, inArr.length ) );
+			inArr = sortof.quickSort( testArr );
 			console.timeEnd("QuickSort Time");
 			
-			var expArr = inArr.slice(0, inArr.length );
+			var expArr = _.shuffle( inArr );
 			
-			console.time("JS Sort Time");
+			console.time("JS Sort Time pt2");
 			expArr = expArr.sort( function(a,b) { return a-b; } );
-			console.timeEnd("JS Sort Time");
+			console.timeEnd("JS Sort Time pt2");
+			console.log( inArr );
+			assert.equal( true, _.isEqual( expArr, inArr ) );
 			
+			done();
+		
+		} );
+		
+	} );
+	*/
+
+	describe( 'Merge', function() {
+		
+		it( 'should merge when using no custom functionality or methods', function( done ) {
+		
+			var inArr = [ 123,534,56,768,5,34,67,87,789,56,34,2,456,3,675,87,5,3,5,7,6,3,4,7,9,4,2,23,6,675,5,3,23,65,565,72,5,7,7,3,5,8,3,1,6,8,0,7,5,3,4,7,9,9,6,5 ];
+			
+			var testArr = inArr.slice(0, inArr.length );
+			
+			console.time("Merge Time");
+			inArr = MergeSort.Merge( [  1, 3, 5, 7, 9,
+										0, 2, 4, 6, 8  ], 0, 5 );
+			console.timeEnd("Merge Time");
+			
+			var expArr = _.shuffle( inArr );
+			
+			assert.equal( true, _.isEqual( [ 0,1,2,3,4,5,6,7,8,9 ], inArr ) );
+			
+			done();
+		
+		} );
+		
+	} );
+
+	describe( 'Merge Sort', function() {
+		
+		it( 'should sort when using no custom functionality or methods', function( done ) {
+		
+			var inArr = [ 123,534,56,768,5,34,67,87,789,56,34,2,456,3,675,87,5,3,5,7,6,3,4,7,9,4,2,23,6,675,5,3,23,65,565,72,5,7,7,3,5,8,3,1,6,8,0,7,5,3,4,7,9,9,6,5 ];
+			
+			var testArr = inArr.slice(0, inArr.length );
+			
+			console.time("Mergesort Time");
+			inArr = MergeSort.MergeSort( testArr );
+			console.timeEnd("Mergesort Time");
+			
+			var expArr = _.shuffle( inArr );
+			
+			console.time("JS Sort Time pt2");
+			expArr = expArr.sort( function(a,b) { return a-b; } );
+			console.timeEnd("JS Sort Time pt2");
+			console.log( inArr );
 			assert.equal( true, _.isEqual( expArr, inArr ) );
 			
 			done();

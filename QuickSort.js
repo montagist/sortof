@@ -2,107 +2,83 @@ var _ = require('lodash');
 
 var config = require('./config');
 
+var bubbleSort = require('./BubbleSort');
+
+function arrcp( arr1, arr2Destroy, start ) {
+
+	arr2Destroy.unshift( start, arr2Destroy.length );
+	arr1.splice.apply( arr1, arr2Destroy );
+}
+
+function smallSort( arrToPiv, start, length ) {
+/*
+	var smallSort = arrToPiv.slice( start, start + length ).sort( function(a,b) { return a-b; } );
+		
+	if ( length <= 1 )
+		return;
+	
+	arrcp( arrToPiv, smallSort, start );
+*/
+bubbleSort( arrToPiv, { subStart: start, subLen: length } );
+}
+
 function pivotRange( arrToPiv, pivDex, start, length ) {
 	
-	
-	if ( length < 4 ) {
-	
-		var smallSort = arrToPiv.slice( start, start + length ).sort( function(a,b) { return a-b; } );
-		//console.log( "small: ", smallSort );
-		
-		if ( length <= 1 )
-			return;
-		
-		for ( var ix = 0; ix < length; ix++ )
-			arrToPiv[ ix + start ] = smallSort[ ix ];
-			
-		//console.log( "reg sorted: ", arrToPiv );
+	if (length < 6) {
+		if (length > 1) smallSort(arrToPiv, start, length);
 		return;
 	}
 	
-	//console.log( arrToPiv, pivDex, start, length );
-	
-	start = start || 0;
-	length = length || arrToPiv.length;
-	
-	var end = start + length,
-		pivotVal = arrToPiv[ pivDex ],
-		replacementArr = [ pivotVal ];
+	var pv = arrToPiv[ pivDex ], replacementArr = [ pv ], nPvDx = 0;
+	for (var i = start; i < start+length; i++) {
+
+		if (i == pivDex) continue;
 		
+		var vl=arrToPiv[ i ];
 		
-	var newPivDex = 0;
-	
-	for ( var i = start; i < start + length; i++ ) {
-		
-		if ( i == pivDex )
-			continue;
-		
-		//console.log( " -- ", arrToPiv[ i ], pivotVal );
-		
-		if ( arrToPiv[ i ] == pivotVal ) {
+		if (arrToPiv[ i ] == pv) {
 			
-			replacementArr.splice( newPivDex, 0, arrToPiv[ i ] );
+			replacementArr.splice(nPvDx,0,vl);
 		
-		} else if ( arrToPiv[ i ] > pivotVal ) {
+		} else if (arrToPiv[ i ] > pv) {
 			
-			replacementArr.push( arrToPiv[ i ] );
-		
+			replacementArr.push(vl);
+			
 		} else {
 			
-			replacementArr.unshift( arrToPiv[ i ] );
-			newPivDex++;
+			replacementArr.unshift(vl);
+			nPvDx++;
 		}
 	}
 	
-	for ( var ix = 0; ix < length; ix++ )
-		arrToPiv[ ix + start ] = replacementArr[ ix ];
-	
-	//console.log( "replaced: ", replacementArr );// pivDex, start, length );
-	//console.log( arrToPiv );
-	
-	return newPivDex + start;
+	arrcp( arrToPiv, replacementArr, start );
+	return nPvDx + start;
 }
 
 module.exports = function( arrToSort, opts ) {
 	
-	//console.log( "start: ", arrToSort );
+	var splitPoints = [],tmpMidDex,rStart = 0, rEnd = arrToSort.length;
 	
-	opts = config._processOpts( opts );
-	
-	var splitPoints = [];
+	do {		
 
-	// Plain sort - no custom funcs w/in loop for speed's sake
-	// as we must be dealing w/ js primitives
-	if ( !opts.customComparator && !opts.customAccessor ) {
+		if ( splitPoints.length > 0 ) {
+
+			rEnd = splitPoints.pop();
+			rStart = splitPoints.pop();
+		}
 		
-		var tmpMidDex,
-			rangeStart = 0,
-			rangeEnd = arrToSort.length;
+		tmpMidDex = Math.floor( ( ( rEnd - rStart ) / 2 ) + rStart );
 		
-		do {		
+		var latestPivDex = pivotRange( arrToSort, tmpMidDex, rStart, rEnd-rStart );
 
-			if ( splitPoints.length > 0 ) {
+		if ( typeof latestPivDex !== "undefined") {
+			
+			splitPoints.push( rStart, latestPivDex, 
+							  latestPivDex + 1, rEnd );
+		}
+		
+	} while ( splitPoints.length != 0 )
 
-				rangeEnd = splitPoints.pop();
-				rangeStart = splitPoints.pop();
-			}
-			
-			tmpMidDex = Math.floor( ( ( rangeEnd - rangeStart ) / 2 ) + rangeStart );
-			
-			//console.log( "about to partition: ", rangeStart, tmpMidDex, rangeEnd - rangeStart );
-			
-			var latestPivDex = pivotRange( arrToSort, tmpMidDex, rangeStart, rangeEnd-rangeStart );
-
-			if ( typeof latestPivDex !== "undefined") {
-				
-				// Bisect range by the latest pivot index
-				splitPoints.push( rangeStart, latestPivDex, 
-								  latestPivDex + 1, rangeEnd );
-			}
-			
-		} while ( splitPoints.length != 0 )
-	}
-	
 	return arrToSort;
 }
 		
